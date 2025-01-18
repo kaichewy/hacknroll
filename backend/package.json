@@ -1,28 +1,22 @@
 {
-  "name": "backend",
+  "name": "hacknroll",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "description": "h\u0000a\u0000c\u0000k\u0000n\u0000r\u0000o\u0000l\u0000l\u0000 \u0000 \u0000",
+  "main": "index.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon ./src/app.js",
+    "start": "node ./src/app.js"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+=======
+>>>>>>> frontend/feat/map
     "express": "^4.21.2"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.7",
-    "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
   }
 }
