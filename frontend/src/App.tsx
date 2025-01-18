@@ -16,8 +16,8 @@ const mapContainerStyle = {
 
 const mockPolylinePath = [
   { lat: 1.3521, lng: 103.8198 }, // Singapore
-  { lat: 2.917, lng: 101.650 },  // Mock stop 1
-  { lat: 3.139, lng: 101.6869 }, // Kuala Lumpur
+  { lat: 1.3612, lng: 103.8863 },  // Mock stop 1
+  { lat: 1.2838, lng: 103.8591 }, // Kuala Lumpur
 ];
 
 const App: React.FC = () => {
@@ -77,7 +77,7 @@ const App: React.FC = () => {
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
       center={center} // Bind center to state
-      zoom={7} // Initial zoom level
+      zoom={12} // Initial zoom level
       onLoad={handleMapLoad}
       onCenterChanged={handleCenterChanged} // Capture map center changes
       options={{
@@ -89,7 +89,7 @@ const App: React.FC = () => {
         options={{
           origin: mockPolylinePath[0],
           destination: mockPolylinePath[mockPolylinePath.length - 1],
-          travelMode: google.maps.TravelMode.TRANSIT, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
+          travelMode: google.maps.TravelMode.DRIVING, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
           waypoints, // Pass the waypoints
           optimizeWaypoints: true, // Optional: Optimize the route for efficiency
         }}
