@@ -1,0 +1,16 @@
+{
+  "name": "hacknroll",
+  "version": "1.0.0",
+  "description": "h\u0000a\u0000c\u0000k\u0000n\u0000r\u0000o\u0000l\u0000l\u0000 \u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon ./src/app.js",
+    "start": "node ./src/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
