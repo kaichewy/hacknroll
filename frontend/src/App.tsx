@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   Route,
   createBrowserRouter,
@@ -29,18 +28,6 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-=======
-import React, { useRef, useState } from "react";
-import {
-  GoogleMap,
-  DirectionsService,
-  DirectionsRenderer,
-  useJsApiLoader,
-} from "@react-google-maps/api";
-
-import { debounce } from "lodash";
-
->>>>>>> frontend/feat/map
 
 const mapContainerStyle = {
   width: "100%",
@@ -107,7 +94,6 @@ const App: React.FC = () => {
   }
 
   return (
-<<<<<<< HEAD
     <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
@@ -123,41 +109,3 @@ const App: React.FC = () => {
 // export default App
 // */
 // export default App;
-=======
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center} // Bind center to state
-      zoom={12} // Initial zoom level
-      onLoad={handleMapLoad}
-      onCenterChanged={handleCenterChanged} // Capture map center changes
-      options={{
-        zoomControl: true,
-        mapTypeControl: true,
-      }}
-    >
-      <DirectionsService
-        options={{
-          origin: mockPolylinePath[0],
-          destination: mockPolylinePath[mockPolylinePath.length - 1],
-          travelMode: google.maps.TravelMode.DRIVING, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
-          waypoints, // Pass the waypoints
-          optimizeWaypoints: true, // Optional: Optimize the route for efficiency
-        }}
-        callback={handleDirectionsCallback}
-      />
-
-      {directions && (
-        <DirectionsRenderer
-          directions={directions}
-          options={{
-            suppressMarkers: false, // Optional: Prevent DirectionsRenderer from adding default markers
-            preserveViewport: true, // Prevent map center and zoom changes
-          }}
-        />
-      )}
-    </GoogleMap>
-  );
-};
-
-export default App;
->>>>>>> frontend/feat/map
