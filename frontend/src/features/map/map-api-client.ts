@@ -35,6 +35,8 @@ class MapClient extends ApiClient<any> {
             };
         }
     }
+
+
 }
 
 const mapClient = new MapClient();
