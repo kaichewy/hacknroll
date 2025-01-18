@@ -1,5 +1,33 @@
-import React from "react";
-import { GoogleMap, LoadScript } from "@react-google-maps/api";
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from "react-router-dom";
+import HomePage from "./pages/HomePage";
+
+/**
+ * App router
+ */
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route index element={<HomePage />} />
+  )
+)
+
+function App() {
+  return (
+    <RouterProvider router={router} />
+  )
+}
+
+export default App
+
+/*
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
 // Define map container style
 const mapContainerStyle = {
@@ -21,10 +49,12 @@ const App: React.FC = () => {
         center={center}
         zoom={10} // Adjust zoom level
       >
-        {/* Add additional map components here if needed */}
-      </GoogleMap>
-    </LoadScript>
-  );
-};
+        {/* Add additional map components here if needed */
+//       </GoogleMap>
+//     </LoadScript>
+//   );
+// };
 
-export default App;
+// export default App
+// */
+// export default App;
