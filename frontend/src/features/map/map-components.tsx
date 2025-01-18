@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { data } from "react-router-dom";
 import mockMapApi from "../../api/mock-map-api";
 import { ApiResponse } from "../../api/types";
@@ -39,4 +40,10 @@ export {
 
 const Directions = () => {
     const [routes, setRoutes] = useState<google.maps.DirectionsRoute[]>([]);
+=======
+const MapView = () => {
+    return (
+        <>HI</>
+    )
+>>>>>>> origin/main
 }
