@@ -1,0 +1,5 @@
+const MapView = () => {
+    return (
+        <>HI</>
+    )
+}

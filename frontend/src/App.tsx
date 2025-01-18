@@ -1,3 +1,19 @@
+import mockMapApi from "./api/mock-map-api"
+import { ApiResponse } from "./api/types";
+
+function App() {
+  // JUST TO TEST THE DATA
+  const test = async () => {
+    const { status, data, error }: ApiResponse<any> = await mockMapApi.getRoute();
+    console.log("TEST", data);
+  }
+
+  test();
+}
+
+export default App
+
+/*
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
@@ -33,3 +49,4 @@ function App() {
 }
 
 export default App
+*/
