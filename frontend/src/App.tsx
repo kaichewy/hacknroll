@@ -1,35 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from "react";
+import { GoogleMap, LoadScript } from "@react-google-maps/api";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Define map container style
+const mapContainerStyle = {
+  width: "100%",
+  height: "100vh", // Full screen height
+};
 
+// Initial map center coordinates (e.g., Singapore)
+const center = {
+  lat: 1.3521,
+  lng: 103.8198,
+};
+
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={center}
+        zoom={10} // Adjust zoom level
+      >
+        {/* Add additional map components here if needed */}
+      </GoogleMap>
+    </LoadScript>
+  );
+};
 
-export default App
+export default App;
