@@ -6,6 +6,7 @@ import { ApiResponse } from "./types";
 
 class MockMapApi {
     async getRoute(): Promise<ApiResponse<any>> {
+
         return {
             status: "success",
             data: "",

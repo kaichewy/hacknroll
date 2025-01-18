@@ -1,6 +1,3 @@
-import mockMapApi from "./api/mock-map-api"
-import { ApiResponse } from "./api/types";
-
 import {
   Route,
   createBrowserRouter,
