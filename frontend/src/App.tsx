@@ -6,6 +6,9 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 
+import { debounce } from "lodash";
+
+
 const mapContainerStyle = {
   width: "100%",
   height: "100vh",
@@ -18,6 +21,9 @@ const App: React.FC = () => {
   });
 
   const mapRef = useRef<google.maps.Map | null>(null);
+
+  // Center state to allow dynamic updates
+  const [center, setCenter] = useState({ lat: 1.3521, lng: 103.8198 }); // Initial center (Singapore)
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 
   const origin = { lat: 1.3521, lng: 103.8198 }; // Singapore
@@ -38,15 +44,18 @@ const App: React.FC = () => {
     }
   };
 
-  const handleCenterChanged = () => {
+  const handleCenterChanged = debounce(() => {
     if (mapRef.current) {
       const newCenter = mapRef.current.getCenter()?.toJSON();
-      // Update center in state if it's different
-      if (newCenter) {
-        console.log("New Center:", newCenter);
+      if (
+        newCenter &&
+        (newCenter.lat !== center.lat || newCenter.lng !== center.lng)
+      ) {
+        setCenter(newCenter);
       }
     }
-  };
+  }, 300); // Updates at most once every 300ms
+
 
   if (loadError) {
     return <div>Error loading Google Maps API</div>;
@@ -59,7 +68,7 @@ const App: React.FC = () => {
   return (
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
-      center={{ lat: 1.3521, lng: 103.8198 }} // Initial center
+      center={center} // Bind center to state
       zoom={7} // Initial zoom level
       onLoad={handleMapLoad}
       onCenterChanged={handleCenterChanged} // Capture map center changes
@@ -77,10 +86,15 @@ const App: React.FC = () => {
         callback={handleDirectionsCallback}
       />
 
-      {directions && <DirectionsRenderer directions={directions} options={{
-      suppressMarkers: false, // Optional: Prevent DirectionsRenderer from adding default markers
-      preserveViewport: true, // Prevent map center and zoom changes
-    }} />}
+      {directions && (
+        <DirectionsRenderer
+          directions={directions}
+          options={{
+            suppressMarkers: false, // Optional: Prevent DirectionsRenderer from adding default markers
+            preserveViewport: true, // Prevent map center and zoom changes
+          }}
+        />
+      )}
     </GoogleMap>
   );
 };
