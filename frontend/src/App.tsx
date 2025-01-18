@@ -14,6 +14,12 @@ const mapContainerStyle = {
   height: "100vh",
 };
 
+const mockPolylinePath = [
+  { lat: 1.3521, lng: 103.8198 }, // Singapore
+  { lat: 2.917, lng: 101.650 },  // Mock stop 1
+  { lat: 3.139, lng: 101.6869 }, // Kuala Lumpur
+];
+
 const App: React.FC = () => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -25,9 +31,6 @@ const App: React.FC = () => {
   // Center state to allow dynamic updates
   const [center, setCenter] = useState({ lat: 1.3521, lng: 103.8198 }); // Initial center (Singapore)
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-
-  const origin = { lat: 1.3521, lng: 103.8198 }; // Singapore
-  const destination = { lat: 3.139, lng: 101.6869 }; // Kuala Lumpur
 
   const handleMapLoad = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -43,6 +46,11 @@ const App: React.FC = () => {
       console.error(`Directions request failed with status: ${status}`);
     }
   };
+
+  const waypoints = mockPolylinePath.slice(1, -1).map((point) => ({
+    location: point,
+    stopover: true,
+  }));
 
   const handleCenterChanged = debounce(() => {
     if (mapRef.current) {
@@ -79,9 +87,11 @@ const App: React.FC = () => {
     >
       <DirectionsService
         options={{
-          origin,
-          destination,
-          travelMode: google.maps.TravelMode.TRANSIT,
+          origin: mockPolylinePath[0],
+          destination: mockPolylinePath[mockPolylinePath.length - 1],
+          travelMode: google.maps.TravelMode.TRANSIT, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
+          waypoints, // Pass the waypoints
+          optimizeWaypoints: true, // Optional: Optimize the route for efficiency
         }}
         callback={handleDirectionsCallback}
       />
