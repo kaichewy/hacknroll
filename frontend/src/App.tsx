@@ -1,14 +1,27 @@
 import mockMapApi from "./api/mock-map-api"
 import { ApiResponse } from "./api/types";
 
-function App() {
-  // JUST TO TEST THE DATA
-  const test = async () => {
-    const { status, data, error }: ApiResponse<any> = await mockMapApi.getRoute();
-    console.log("TEST", data);
-  }
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from "react-router-dom";
+import HomePage from "./pages/HomePage";
 
-  test();
+/**
+ * App router
+ */
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route index element={<HomePage />} />
+  )
+)
+
+function App() {
+  return (
+    <RouterProvider router={router} />
+  )
 }
 
 export default App
