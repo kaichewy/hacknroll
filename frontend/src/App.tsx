@@ -6,6 +6,7 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 import { debounce } from "lodash";
+import MapComponents from "./features/map/map-components";
 
 const mapContainerStyle = {
   width: "100%",
@@ -17,11 +18,14 @@ const mockPolylinePath = [
   { lat: 2.917, lng: 101.650 },  // Mock stop 1
   { lat: 3.139, lng: 101.6869 }, // Kuala Lumpur
 ];
+const libraries = ["places"];
+
 
 const App: React.FC = () => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     version: "3.58",
+    libraries,
   });
 
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -72,6 +76,8 @@ const App: React.FC = () => {
   }
 
   return (
+    <div>
+      <MapComponents isLoaded={isLoaded} />
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
       center={center} // Bind center to state
@@ -104,6 +110,7 @@ const App: React.FC = () => {
         />
       )}
     </GoogleMap>
+    </div>
   );
 };
 

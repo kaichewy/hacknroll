@@ -1,10 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import {
-  GoogleMap,
-  DirectionsService,
-  DirectionsRenderer,
-  useJsApiLoader,
-} from "@react-google-maps/api";
+import { GoogleMap, DirectionsRenderer } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -16,12 +11,11 @@ const center = {
   lng: 103.8198,
 };
 
-const MapComponents: React.FC = () => {
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY", // Replace with your API key
-    libraries: ["places"],
-  });
+interface MapComponentsProps {
+  isLoaded: boolean;
+}
 
+const MapComponents: React.FC<MapComponentsProps> = ({ isLoaded }) => {
   const [startPoint, setStartPoint] = useState<string>("");
   const [endPoint, setEndPoint] = useState<string>("");
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
@@ -90,14 +84,6 @@ const MapComponents: React.FC = () => {
       }
     );
   };
-
-  if (loadError) {
-    return <div>Error loading Google Maps API</div>;
-  }
-
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>
@@ -170,4 +156,3 @@ const MapComponents: React.FC = () => {
 };
 
 export default MapComponents;
-
