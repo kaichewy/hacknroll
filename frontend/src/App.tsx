@@ -1,43 +1,22 @@
+import React, { useState } from "react";
 import {
-  Route,
-  createBrowserRouter,
-  createRoutesFromElements,
-  RouterProvider,
-} from "react-router-dom";
-import HomePage from "./pages/HomePage";
-
-/**
- * App router
- */
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route index element={<HomePage />} />
-  )
-)
-
-function App() {
-  return (
-    <RouterProvider router={router} />
-  )
-}
-
-export default App
-
-/*
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+  GoogleMap,
+  DirectionsService,
+  DirectionsRenderer,
+  useJsApiLoader,
+} from "@react-google-maps/api";
 
 const mapContainerStyle = {
   width: "100%",
   height: "100vh",
 };
 
+// Mock polyline path with multiple waypoints
 const mockPolylinePath = [
-  { lat: 1.3521, lng: 103.8198 }, // Singapore
-  { lat: 1.3612, lng: 103.8863 },  // Mock stop 1
-  { lat: 1.2838, lng: 103.8591 }, // Kuala Lumpur
+  { lat: 1.3521, lng: 103.8198 }, // Singapore (Origin)
+  { lat: 2.5, lng: 101.7 },       // Stop 1
+  { lat: 2.917, lng: 101.650 },   // Stop 2
+  { lat: 3.139, lng: 101.6869 },  // Kuala Lumpur (Destination)
 ];
 
 const App: React.FC = () => {
@@ -46,44 +25,23 @@ const App: React.FC = () => {
     version: "3.58",
   });
 
-  const mapRef = useRef<google.maps.Map | null>(null);
-
-  // Center state to allow dynamic updates
-  const [center, setCenter] = useState({ lat: 1.3521, lng: 103.8198 }); // Initial center (Singapore)
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-
-  const handleMapLoad = (map: google.maps.Map) => {
-    mapRef.current = map;
-  };
+  const [directionsArray, setDirectionsArray] = useState<google.maps.DirectionsResult[]>([]);
 
   const handleDirectionsCallback = (
+    index: number,
     response: google.maps.DirectionsResult | null,
     status: google.maps.DirectionsStatus
   ) => {
-    if (status === google.maps.DirectionsStatus.OK) {
-      setDirections(response);
+    if (status === google.maps.DirectionsStatus.OK && response) {
+      setDirectionsArray((prev) => {
+        const newDirections = [...prev];
+        newDirections[index] = response;
+        return newDirections;
+      });
     } else {
       console.error(`Directions request failed with status: ${status}`);
     }
   };
-
-  const waypoints = mockPolylinePath.slice(1, -1).map((point) => ({
-    location: point,
-    stopover: true,
-  }));
-
-  const handleCenterChanged = debounce(() => {
-    if (mapRef.current) {
-      const newCenter = mapRef.current.getCenter()?.toJSON();
-      if (
-        newCenter &&
-        (newCenter.lat !== center.lat || newCenter.lng !== center.lng)
-      ) {
-        setCenter(newCenter);
-      }
-    }
-  }, 300); // Updates at most once every 300ms
-
 
   if (loadError) {
     return <div>Error loading Google Maps API</div>;
@@ -93,19 +51,41 @@ const App: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  return (
-    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={center}
-        zoom={10} // Adjust zoom level
-      >
-        {/* Add additional map components here if needed */
-//       </GoogleMap>
-//     </LoadScript>
-//   );
-// };
+  // Divide the route into segments (origin, stop 1, stop 2, destination)
+  const segments = [];
+  for (let i = 0; i < mockPolylinePath.length - 1; i++) {
+    segments.push({
+      origin: mockPolylinePath[i],
+      destination: mockPolylinePath[i + 1],
+    });
+  }
 
-// export default App
-// */
-// export default App;
+  return (
+    <GoogleMap mapContainerStyle={mapContainerStyle} center={mockPolylinePath[0]} zoom={7}>
+      {segments.map((segment, index) => (
+        <DirectionsService
+          key={index}
+          options={{
+            origin: segment.origin,
+            destination: segment.destination,
+            travelMode: google.maps.TravelMode.TRANSIT,
+          }}
+          callback={(response, status) => handleDirectionsCallback(index, response, status)}
+        />
+      ))}
+
+      {directionsArray.map((directions, index) => (
+        <DirectionsRenderer
+          key={index}
+          directions={directions}
+          options={{
+            suppressMarkers: false,
+            preserveViewport: true,
+          }}
+        />
+      ))}
+    </GoogleMap>
+  );
+};
+
+export default App;
