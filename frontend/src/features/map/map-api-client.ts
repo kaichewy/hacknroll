@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import ApiClient, { ApiClientResponse } from "../../api/types";
+import { ApiClient, ApiClientResponse } from "../../api/types";
 import mockMapApi from "../../api/mock-map-api";
 
 class MapClient extends ApiClient<any> {
