@@ -1,13 +1,33 @@
-import React, { useRef, useState } from "react";
 import {
-  GoogleMap,
-  DirectionsService,
-  DirectionsRenderer,
-  useJsApiLoader,
-} from "@react-google-maps/api";
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from "react-router-dom";
+import HomePage from "./pages/HomePage";
 
-import { debounce } from "lodash";
+/**
+ * App router
+ */
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route index element={<HomePage />} />
+  )
+)
 
+function App() {
+  return (
+    <RouterProvider router={router} />
+  )
+}
+
+export default App
+
+/*
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
 const mapContainerStyle = {
   width: "100%",
@@ -74,39 +94,18 @@ const App: React.FC = () => {
   }
 
   return (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center} // Bind center to state
-      zoom={12} // Initial zoom level
-      onLoad={handleMapLoad}
-      onCenterChanged={handleCenterChanged} // Capture map center changes
-      options={{
-        zoomControl: true,
-        mapTypeControl: true,
-      }}
-    >
-      <DirectionsService
-        options={{
-          origin: mockPolylinePath[0],
-          destination: mockPolylinePath[mockPolylinePath.length - 1],
-          travelMode: google.maps.TravelMode.DRIVING, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
-          waypoints, // Pass the waypoints
-          optimizeWaypoints: true, // Optional: Optimize the route for efficiency
-        }}
-        callback={handleDirectionsCallback}
-      />
+    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={center}
+        zoom={10} // Adjust zoom level
+      >
+        {/* Add additional map components here if needed */
+//       </GoogleMap>
+//     </LoadScript>
+//   );
+// };
 
-      {directions && (
-        <DirectionsRenderer
-          directions={directions}
-          options={{
-            suppressMarkers: false, // Optional: Prevent DirectionsRenderer from adding default markers
-            preserveViewport: true, // Prevent map center and zoom changes
-          }}
-        />
-      )}
-    </GoogleMap>
-  );
-};
-
-export default App;
+// export default App
+// */
+// export default App;
