@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   GoogleMap,
-  DirectionsService,
-  DirectionsRenderer,
+  Polygon,
+  Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
 
@@ -12,162 +12,163 @@ const containerStyle = {
 };
 
 const center = {
-  lat: 1.3521, // Centered on Singapore
-  lng: 103.8198,
+  lat: 1.3615, // Approximate center of Singapore
+  lng: 103.7899,
 };
 
 const MapComponents: React.FC = () => {
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY", // Replace with your API key
-    libraries: ["places"],
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "AIzaSyA7t8jIObDN260IvzAh_eGho53EKMUBnF0", // Replace with your API key
+    libraries: ["places", "geometry"],
   });
 
-  const [startPoint, setStartPoint] = useState<string>("");
-  const [endPoint, setEndPoint] = useState<string>("");
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [ellipseCoords, setEllipseCoords] = useState<google.maps.LatLngLiteral[]>([]);
+  const [cafes, setCafes] = useState<any[]>([]);
 
-  const startInputRef = useRef<HTMLInputElement>(null);
-  const endInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteStartRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const autocompleteEndRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  const point1 = { lat: 1.3415945963701963, lng: 103.7310746034368 }; // Start point
+  const point2 = { lat: 1.381440274111866, lng: 103.84878826128727 }; // End point
 
   useEffect(() => {
-    if (isLoaded && startInputRef.current && endInputRef.current) {
-      const options = {
-        fields: ["geometry", "formatted_address"],
-        types: ["geocode"],
+    if (isLoaded) {
+      // Compute midpoint
+      const midpoint = {
+        lat: (point1.lat + point2.lat) / 2,
+        lng: (point1.lng + point2.lng) / 2,
       };
 
-      // Initialize Autocomplete for Start Input
-      autocompleteStartRef.current = new window.google.maps.places.Autocomplete(
-        startInputRef.current!,
-        options
-      );
-      autocompleteStartRef.current.addListener("place_changed", () => {
-        const place = autocompleteStartRef.current!.getPlace();
-        if (place.geometry) {
-          setStartPoint(place.formatted_address || "");
-        }
-      });
+      // Compute the shortest distance between the two points (semi-major axis)
+      const semiMajorAxis =
+        google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(point1),
+          new google.maps.LatLng(midpoint)
+        );
 
-      // Initialize Autocomplete for End Input
-      autocompleteEndRef.current = new window.google.maps.places.Autocomplete(
-        endInputRef.current!,
-        options
-      );
-      autocompleteEndRef.current.addListener("place_changed", () => {
-        const place = autocompleteEndRef.current!.getPlace();
-        if (place.geometry) {
-          setEndPoint(place.formatted_address || "");
-        }
-      });
+      // Compute semi-minor axis (height of the ellipse is the distance, width = 1.5x height)
+      const semiMinorAxis = semiMajorAxis * 1.5;
+
+      // Generate ellipse points
+      const ellipsePoints = [];
+      for (let angle = 0; angle < 360; angle += 10) {
+        const theta = (angle * Math.PI) / 180;
+        const latOffset = (semiMajorAxis * Math.cos(theta)) / 111320; // Convert meters to degrees
+        const lngOffset =
+          (semiMinorAxis * Math.sin(theta)) /
+          (111320 * Math.cos((midpoint.lat * Math.PI) / 180));
+        ellipsePoints.push({
+          lat: midpoint.lat + latOffset,
+          lng: midpoint.lng + lngOffset,
+        });
+      }
+
+      setEllipseCoords(ellipsePoints);
+
+      // Find cafes
+      findCafes(midpoint, semiMajorAxis * 2);
     }
   }, [isLoaded]);
 
-  // Function to Fetch Directions
-  const fetchDirections = () => {
-    if (!startPoint || !endPoint) {
-      setError("Please enter both starting and ending locations.");
-      return;
-    }
+  const findCafes = (location: google.maps.LatLngLiteral, radius: number) => {
+    if (!mapRef.current) return;
 
-    const directionsService = new window.google.maps.DirectionsService();
+    const service = new google.maps.places.PlacesService(mapRef.current);
 
-    directionsService.route(
+    service.nearbySearch(
       {
-        origin: startPoint,
-        destination: endPoint,
-        travelMode: google.maps.TravelMode.TRANSIT, // Public Transport Mode
+        location,
+        radius, // Radius in meters
+        type: "cafe",
       },
-      (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK && result) {
-          setDirections(result);
-          setError(null);
-        } else {
-          setError("Could not fetch directions. Please try again.");
+      (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+          // Filter cafes inside the ellipse
+          const filteredCafes = results.filter((place) => {
+            const location = place.geometry?.location;
+            if (location) {
+              const point = { lat: location.lat(), lng: location.lng() };
+              return google.maps.geometry.poly.containsLocation(
+                new google.maps.LatLng(point),
+                new google.maps.Polygon({ paths: ellipseCoords })
+              );
+            }
+            return false;
+          });
+
+          setCafes(filteredCafes);
         }
       }
     );
   };
 
-  if (loadError) {
-    return <div>Error loading Google Maps API</div>;
-  }
+  return isLoaded ? (
+    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={12}
+        onLoad={(map: google.maps.Map) => {
+          mapRef.current = map;
+        }}
+      >
+        {/* Draw Ellipse */}
+        {ellipseCoords.length > 0 && (
+          <Polygon
+            paths={ellipseCoords}
+            options={{
+              strokeColor: "#FF0000",
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              fillColor: "#FF0000",
+              fillOpacity: 0.35,
+            }}
+          />
+        )}
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      {/* Google Map */}
-      <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={12}>
-        {/* Render Directions */}
-        {directions && <DirectionsRenderer directions={directions} />}
+        {/* Pin Cafes */}
+        {cafes.map((cafe, index) => (
+          <Marker
+            key={index}
+            position={{
+              lat: cafe.geometry.location.lat(),
+              lng: cafe.geometry.location.lng(),
+            }}
+            title={cafe.name}
+          />
+        ))}
       </GoogleMap>
 
-      {/* Input and Controls */}
+      {/* Display Cafes */}
       <div
         style={{
           position: "absolute",
-          top: "20px",
+          bottom: "20px",
           left: "50%",
           transform: "translateX(-50%)",
-          zIndex: 1000,
           backgroundColor: "white",
           padding: "10px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
+          maxHeight: "200px",
+          overflowY: "scroll",
         }}
       >
-        <input
-          ref={startInputRef}
-          type="text"
-          placeholder="Enter starting location"
-          value={startPoint}
-          onChange={(e) => setStartPoint(e.target.value)}
-          style={{
-            padding: "10px",
-            width: "300px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-          }}
-        />
-        <input
-          ref={endInputRef}
-          type="text"
-          placeholder="Enter destination"
-          value={endPoint}
-          onChange={(e) => setEndPoint(e.target.value)}
-          style={{
-            padding: "10px",
-            width: "300px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-          }}
-        />
-        <button
-          onClick={fetchDirections}
-          style={{
-            padding: "10px",
-            backgroundColor: "#4285F4",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Get Directions
-        </button>
-        {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
+        <strong> Cafes Found: </strong>
+        {cafes.length === 0 ? (
+          <p>No cafes found within the region.</p>
+        ) : (
+          cafes.map((cafe, index) => (
+            <div key={index}>
+              <strong>{cafe.name}</strong>
+              <p>{cafe.vicinity}</p>
+            </div>
+          ))
+        )}
       </div>
     </div>
+  ) : (
+    <div>Loading...</div>
   );
 };
 
 export default MapComponents;
-

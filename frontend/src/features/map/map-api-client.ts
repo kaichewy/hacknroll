@@ -1,42 +1,51 @@
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { ApiClient, ApiClientResponse } from "../../api/types";
-import mockMapApi from "../../api/mock-map-api";
 
 class MapClient extends ApiClient<any> {
-    // 
-    async getRoute(): Promise<ApiClientResponse<any>> {
-        try {
-            // TODO: replace with axios GET call
-            const res = await mockMapApi.getRoute();
+  private readonly BASE_URL = "https://maps.googleapis.com/maps/api/directions/json";
 
-            const data = "";
+  async getRoute(
+    origin: string,
+    destination: string,
+    travelMode: string = "TRANSIT",
+    apiKey: string
+  ): Promise<ApiClientResponse<any>> {
+    try {
+      // Make an API call to the Google Maps Directions API
+      const res = await axios.get(this.BASE_URL, {
+        params: {
+          origin,
+          destination,
+          mode: travelMode,
+          key: apiKey,
+        },
+      });
 
-            return {
-                type: "success",
-                data: data,
-                error: "",
-            }
-        } catch (err: any) {
-            // TODO: replace with AxiosError or something
-            let message;
+      const data = res.data;
 
-            if (err instanceof AxiosError) {
-                message = err.response?.data.error ?? "Failed to get route: An unexpected error occurred.";
-            } else {
-                message = "Failed to get route: An unexpected error occurred.";
-            }
+      return {
+        type: "success",
+        data: data,
+        error: "",
+      };
+    } catch (err: any) {
+      let message;
 
-            console.log("[MapClient.getRoute] Failed to GET route", err);
+      if (err instanceof AxiosError) {
+        message = err.response?.data.error_message ?? "Failed to get route: An unexpected error occurred.";
+      } else {
+        message = "Failed to get route: An unexpected error occurred.";
+      }
 
-            return {
-                type: "error",
-                data: null,
-                error: message,
-            };
-        }
+      console.error("[MapClient.getRoute] Failed to GET route", err);
+
+      return {
+        type: "error",
+        data: null,
+        error: message,
+      };
     }
-
-
+  }
 }
 
 const mapClient = new MapClient();
