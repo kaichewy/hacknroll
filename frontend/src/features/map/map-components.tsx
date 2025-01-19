@@ -1,25 +1,14 @@
 import React, { useRef, useEffect, useState } from "react";
-import { GoogleMap, DirectionsRenderer } from "@react-google-maps/api";
-
-const containerStyle = {
-  width: "100%",
-  height: "100vh",
-};
-
-const center = {
-  lat: 1.3521, // Centered on Singapore
-  lng: 103.8198,
-};
 
 interface MapComponentsProps {
-  isLoaded: boolean;
+  isLoaded: boolean; // Prop to check if the Google Maps API has loaded
+  onFormSubmit: (start: string, end: string) => void; // Callback for form submission
 }
 
-const MapComponents: React.FC<MapComponentsProps> = ({ isLoaded }) => {
-  const [startPoint, setStartPoint] = useState<string>("");
-  const [endPoint, setEndPoint] = useState<string>("");
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const MapComponents: React.FC<MapComponentsProps> = ({ isLoaded, onFormSubmit }) => {
+  const [startPoint, setStartPoint] = useState<string>(""); // Starting location
+  const [endPoint, setEndPoint] = useState<string>(""); // Ending location
+  const [error, setError] = useState<string | null>(null); // Error handling
 
   const startInputRef = useRef<HTMLInputElement>(null);
   const endInputRef = useRef<HTMLInputElement>(null);
@@ -59,98 +48,73 @@ const MapComponents: React.FC<MapComponentsProps> = ({ isLoaded }) => {
     }
   }, [isLoaded]);
 
-  // Function to Fetch Directions
-  const fetchDirections = () => {
+  const handleSubmit = () => {
     if (!startPoint || !endPoint) {
       setError("Please enter both starting and ending locations.");
       return;
     }
-
-    const directionsService = new window.google.maps.DirectionsService();
-
-    directionsService.route(
-      {
-        origin: startPoint,
-        destination: endPoint,
-        travelMode: google.maps.TravelMode.TRANSIT, // Public Transport Mode
-      },
-      (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK && result) {
-          setDirections(result);
-          setError(null);
-        } else {
-          setError("Could not fetch directions. Please try again.");
-        }
-      }
-    );
+    setError(null); // Clear any existing error
+    onFormSubmit(startPoint, endPoint); // Pass data to the parent component
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
-      {/* Google Map */}
-      <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={12}>
-        {/* Render Directions */}
-        {directions && <DirectionsRenderer directions={directions} />}
-      </GoogleMap>
-
-      {/* Input and Controls */}
-      <div
+    <div
+      style={{
+        position: "absolute",
+        top: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 1000,
+        backgroundColor: "white",
+        padding: "10px",
+        borderRadius: "8px",
+        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+      }}
+    >
+      <h3>Find Directions</h3>
+      <input
+        ref={startInputRef}
+        type="text"
+        placeholder="Enter starting location"
+        value={startPoint}
+        onChange={(e) => setStartPoint(e.target.value)}
         style={{
-          position: "absolute",
-          top: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 1000,
-          backgroundColor: "white",
           padding: "10px",
-          borderRadius: "8px",
-          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
+          width: "300px",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+        }}
+      />
+      <input
+        ref={endInputRef}
+        type="text"
+        placeholder="Enter destination"
+        value={endPoint}
+        onChange={(e) => setEndPoint(e.target.value)}
+        style={{
+          padding: "10px",
+          width: "300px",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+        }}
+      />
+      <button
+        onClick={handleSubmit}
+        style={{
+          padding: "10px",
+          backgroundColor: "#4285F4",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
         }}
       >
-        <input
-          ref={startInputRef}
-          type="text"
-          placeholder="Enter starting location"
-          value={startPoint}
-          onChange={(e) => setStartPoint(e.target.value)}
-          style={{
-            padding: "10px",
-            width: "300px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-          }}
-        />
-        <input
-          ref={endInputRef}
-          type="text"
-          placeholder="Enter destination"
-          value={endPoint}
-          onChange={(e) => setEndPoint(e.target.value)}
-          style={{
-            padding: "10px",
-            width: "300px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-          }}
-        />
-        <button
-          onClick={fetchDirections}
-          style={{
-            padding: "10px",
-            backgroundColor: "#4285F4",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Get Directions
-        </button>
-        {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
-      </div>
+        Get Directions
+      </button>
+      {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
     </div>
   );
 };
