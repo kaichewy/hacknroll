@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
   GoogleMap,
@@ -6,6 +6,8 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import { debounce } from "lodash";
+import { Coordinate, RouteRequest } from "../features/map/map-types";
+import mapClient from "../features/map/map-api-client";
 
 const mapContainerStyle = {
   width: "100%",
@@ -32,10 +34,35 @@ const App: React.FC = () => {
   const { state } = useLocation();
   const { startCoords, endCoords } = state || {}; // Retrieve geocoded coordinates
   const mapRef = useRef<google.maps.Map | null>(null);
-  const PolylinePath = [startCoords, endCoords];
+  // const PolylinePath = [startCoords, endCoords]; // make this the return value of axios call
+  const [polylinePath, setPolylinePath] = useState<Coordinate[]>([]);
   // State management
   const [center, setCenter] = useState( startCoords ); // Initial center (Singapore)
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+
+  useEffect(() => {
+    const routeReq: RouteRequest = {
+      src: startCoords,
+      dst: endCoords,
+    };
+
+    const getDirections = async () => {
+      try {
+        const res = await mapClient.getRoute(routeReq);
+
+        if (res.type === "success" && res.data) {
+          const coords = res.data;
+          setPolylinePath(coords);
+        } else {
+          throw new Error(res.error);
+        }
+      } catch (err) {
+        console.error("[FormPage.handleFormSubmit] Failed to get route", err);
+      }
+    }
+
+    getDirections();
+  }, [startCoords, endCoords])
 
   const handleMapLoad = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -65,7 +92,7 @@ const App: React.FC = () => {
   };
 
   // Convert polyline coordinates to waypoints
-  const waypoints = PolylinePath.slice(1, -1).map((point) => ({
+  const waypoints = polylinePath.slice(1, -1).map((point) => ({
     location: point,
     stopover: true,
   }));
@@ -92,8 +119,8 @@ const App: React.FC = () => {
     >
       <DirectionsService
         options={{
-          origin: PolylinePath[0],
-          destination: PolylinePath[PolylinePath.length - 1],
+          origin: polylinePath[0],
+          destination: polylinePath[polylinePath.length - 1],
           travelMode: google.maps.TravelMode.DRIVING, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
           waypoints, // Pass the waypoints
           optimizeWaypoints: true, // Optional: Optimize the route for efficiency

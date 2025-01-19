@@ -2,6 +2,9 @@ import React from "react";
 import { useJsApiLoader } from "@react-google-maps/api";
 import MapComponents from "../features/map/map-components";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { RouteRequest } from "../features/map/map-types";
+import mapClient from "../features/map/map-api-client";
 
 const libraries = ["places"];
 
