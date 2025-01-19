@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 
 interface MapComponentsProps {
   isLoaded: boolean; // Prop to check if the Google Maps API has loaded
-  onFormSubmit: (start: string, end: string) => void; // Callback for form submission
+  onFormSubmit: (startCoords: { lat: number; lng: number }, endCoords: { lat: number; lng: number }) => void; // Callback for navigation
 }
 
 const MapComponents: React.FC<MapComponentsProps> = ({ isLoaded, onFormSubmit }) => {
@@ -48,13 +48,37 @@ const MapComponents: React.FC<MapComponentsProps> = ({ isLoaded, onFormSubmit })
     }
   }, [isLoaded]);
 
-  const handleSubmit = () => {
+  const geocodeAddress = (address: string): Promise<{ lat: number; lng: number }> => {
+    return new Promise((resolve, reject) => {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const location = results[0].geometry.location.toJSON();
+          resolve(location);
+        } else {
+          reject(`Geocoding failed: ${status}`);
+        }
+      });
+    });
+  };
+
+  const handleSubmit = async () => {
     if (!startPoint || !endPoint) {
       setError("Please enter both starting and ending locations.");
       return;
     }
     setError(null); // Clear any existing error
-    onFormSubmit(startPoint, endPoint); // Pass data to the parent component
+
+    try {
+      const [startCoords, endCoords] = await Promise.all([
+        geocodeAddress(startPoint),
+        geocodeAddress(endPoint),
+      ]);
+      onFormSubmit(startCoords, endCoords); // Pass geocoded data to the parent component
+    } catch (error) {
+      console.error(error);
+      setError("Failed to geocode addresses. Please try again.");
+    }
   };
 
   return (

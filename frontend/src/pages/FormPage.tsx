@@ -13,8 +13,8 @@ const FormPage: React.FC = () => {
     libraries,
   });
 
-  const handleFormSubmit = (start: string, end: string) => {
-    navigate("/map", { state: { start, end } }); // Navigate to the map page with form data
+  const handleFormSubmit = (startCoords: { lat: number; lng: number }, endCoords: { lat: number; lng: number }) => {
+    navigate("/map", { state: { startCoords, endCoords } }); // Navigate to the map page with form data
   };
 
   if (loadError) {

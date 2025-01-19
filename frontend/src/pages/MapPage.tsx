@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   GoogleMap,
   DirectionsService,
   DirectionsRenderer,
-  useJsApiLoader,
 } from "@react-google-maps/api";
 import { debounce } from "lodash";
 
@@ -17,6 +17,10 @@ const mockPolylinePath = [
   { lat: 2.917, lng: 101.650 },  // Mock stop 1
   { lat: 3.139, lng: 101.6869 }, // Kuala Lumpur
 ];
+
+
+
+
 const libraries = ["places"];
 
 const App: React.FC = () => {
@@ -25,11 +29,12 @@ const App: React.FC = () => {
   //   version: "3.58",
   //   libraries,
   // });
-
+  const { state } = useLocation();
+  const { startCoords, endCoords } = state || {}; // Retrieve geocoded coordinates
   const mapRef = useRef<google.maps.Map | null>(null);
-
+  const PolylinePath = [startCoords, endCoords];
   // State management
-  const [center, setCenter] = useState({ lat: 1.3521, lng: 103.8198 }); // Initial center (Singapore)
+  const [center, setCenter] = useState( startCoords ); // Initial center (Singapore)
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 
   const handleMapLoad = (map: google.maps.Map) => {
@@ -60,7 +65,7 @@ const App: React.FC = () => {
   };
 
   // Convert polyline coordinates to waypoints
-  const waypoints = mockPolylinePath.slice(1, -1).map((point) => ({
+  const waypoints = PolylinePath.slice(1, -1).map((point) => ({
     location: point,
     stopover: true,
   }));
@@ -77,8 +82,7 @@ const App: React.FC = () => {
     <div>
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
-      center={center} // Bind center to state
-      zoom={7} // Initial zoom level
+      center={center} // Bind center to state // Initial zoom level
       onLoad={handleMapLoad}
       onCenterChanged={handleCenterChanged} // Capture map center changes
       options={{
@@ -88,8 +92,8 @@ const App: React.FC = () => {
     >
       <DirectionsService
         options={{
-          origin: mockPolylinePath[0],
-          destination: mockPolylinePath[mockPolylinePath.length - 1],
+          origin: PolylinePath[0],
+          destination: PolylinePath[PolylinePath.length - 1],
           travelMode: google.maps.TravelMode.DRIVING, // You can change this to WALKING, BICYCLING, TRANSIT, etc.
           waypoints, // Pass the waypoints
           optimizeWaypoints: true, // Optional: Optimize the route for efficiency
