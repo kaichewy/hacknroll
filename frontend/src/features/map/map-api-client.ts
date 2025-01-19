@@ -1,22 +1,26 @@
 import { AxiosError } from "axios";
-import { ApiClient, ApiClientResponse } from "../../api/types";
+import { ApiClient, ApiClientResponse, ApiResponse } from "../../api/types";
 import mockMapApi from "../../api/mock-map-api";
+import { Coordinate, RouteRequest } from "./map-types";
+import axios from "axios";
 
 class MapClient extends ApiClient<any> {
     // 
-    async getRoute(): Promise<ApiClientResponse<any>> {
+    async getRoute(req: RouteRequest): Promise<ApiClientResponse<Coordinate[]>> {
         try {
             // TODO: replace with axios GET call
-            const res = await mockMapApi.getRoute();
+            const res = await axios.post<ApiResponse<Coordinate[]>>(`${import.meta.env.VITE_BACKEND_API_URL}/route`, req);
+            const apiResponse = res.data;
+            const data = apiResponse;
 
-            const data = "";
+            console.log("[MapClient.getRoute] Successfully GET route", res);
 
             return {
                 type: "success",
                 data: data,
                 error: "",
             }
-        } catch (err: any) {
+        } catch (err) {
             // TODO: replace with AxiosError or something
             let message;
 
