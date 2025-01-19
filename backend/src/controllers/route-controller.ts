@@ -19,14 +19,14 @@ export class RouteController {
             // TODO: generate waypoints
             const data: Coordinate[] = [];
             let pt;
-            let i = 4;
-            while (i < 4) {
+            let i = 0;
+            while (i <= 4) {
                 pt = {
                     "latitude": src.latitude + (Math.random()-0.5)*0.005, 
                     "longitude": src.longitude + (Math.random()-0.5)*0.005
                     }
                 if (pt.latitude > 1.13 && pt.latitude < 1.45 && pt.longitude > 103.6 && pt.longitude < 104) {
-                    i -= 1;
+                    i += 1;
                     data.push(pt);
                 } else {
                     continue;
